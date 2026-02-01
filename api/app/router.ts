@@ -97,8 +97,10 @@ router.post("/auth/mock-google", async (req, res) => {
     return res.status(400).json({ success: false, error: { code: "INVALID_EMAIL", message: "Email tidak valid" } });
   }
 
-  const merchant = await getOrCreateMerchantByEmail(email);
-  return res.json({ success: true, data: { merchant } });
+  // Create merchant profile if doesn't exist
+  await getOrCreateMerchantByEmail(email);
+  // Frontend expects a simple ok flag for mock login
+  return res.json({ success: true, data: { ok: true } });
 });
 
 // === Get current merchant profile ===
@@ -117,7 +119,19 @@ router.get("/me", async (req, res) => {
     ? new Set(rawAdmins.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)).has(email)
     : false;
   const creds = merchant.status === 'active' ? await getMerchantCredentials(merchant.id) : null;
-  return res.json({ success: true, data: { merchant, verification_request: vr, is_admin, credentials: creds } });
+  // Keep the response shape friendly for the Bolt UI (email + merchant summary)
+  return res.json({
+    success: true,
+    data: {
+      email,
+      is_admin,
+      merchant: { id: merchant.id, status: merchant.status },
+      // extra fields used by dashboard pages
+      merchant_full: merchant,
+      verification_request: vr,
+      credentials: creds,
+    },
+  });
 });
 
 // Get credentials (active only)
