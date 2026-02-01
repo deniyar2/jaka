@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { clearEmail, fetchMe, getEmail, mockGoogleLogin, setEmail } from '../lib/api';
+import { clearEmail, fetchMe, getEmail, setEmail, registerWithEmail, loginWithEmail } from '../lib/api';
 
 export type User = {
   email: string;
@@ -11,7 +11,8 @@ export type User = {
 type AuthCtx = {
   user: User | null;
   loading: boolean;
-  login: (email: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
   logout: () => void;
   refresh: () => Promise<void>;
 };
@@ -43,10 +44,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function login(email: string) {
+
+  async function login(email: string, password: string) {
     setLoading(true);
     setEmail(email);
-    const res = await mockGoogleLogin(email);
+    const res = await loginWithEmail(email, password);
+    if (!res.success) {
+      clearEmail();
+      setLoading(false);
+      throw new Error(res.error.message);
+    }
+    await refresh();
+  }
+
+  async function register(email: string, password: string) {
+    setLoading(true);
+    setEmail(email);
+    const res = await registerWithEmail(email, password);
     if (!res.success) {
       clearEmail();
       setLoading(false);
@@ -60,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }
 
-  const value = useMemo(() => ({ user, loading, login, logout, refresh }), [user, loading]);
+  const value = useMemo(() => ({ user, loading, login, register, logout, refresh }), [user, loading]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

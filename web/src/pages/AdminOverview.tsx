@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
 import { AdminLayout } from '../components/AdminLayout';
 import { adminGetStats, adminListAlerts, adminResolveAlert, ApiResponse } from '../lib/api';
+import toast from 'react-hot-toast';
 
 export default function AdminOverview({ onNavigate }: { onNavigate: (page: any) => void }) {
   const [stats, setStats] = useState<any>(null);
@@ -17,7 +18,10 @@ export default function AdminOverview({ onNavigate }: { onNavigate: (page: any) 
     setLoading(false);
     if (s?.success) setStats((s as any).data);
     if (a?.success) setAlerts((a as any).data || []);
-    if (!s?.success || !a?.success) setMsg('Gagal memuat data admin. Pastikan email kamu ada di ADMIN_EMAILS.');
+    if (!s?.success || !a?.success) {
+      setMsg('Gagal memuat data admin. Pastikan email kamu ada di ADMIN_EMAILS.');
+      toast.error('Gagal memuat data admin');
+    }
   }
 
   useEffect(() => { load(); }, []);
@@ -26,6 +30,9 @@ export default function AdminOverview({ onNavigate }: { onNavigate: (page: any) 
     const r = await adminResolveAlert(id);
     if ((r as ApiResponse<any>)?.success) {
       setAlerts(prev => prev.filter(x => x.id !== id));
+      toast.success('Alert resolved!');
+    } else {
+      toast.error('Gagal resolve alert');
     }
   }
 

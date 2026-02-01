@@ -32,6 +32,47 @@ import {
 
 const router = express.Router();
 
+import bcrypt from 'bcryptjs';
+
+// === Register (email + password) ===
+router.post('/auth/register', async (req, res) => {
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  const password = String(req.body?.password || '');
+  if (!email || !email.includes('@') || password.length < 6) {
+    return res.status(400).json({ success: false, error: { code: 'INVALID_INPUT', message: 'Email/password tidak valid' } });
+  }
+  const existing = await getMerchantByEmail(email);
+  if (existing && existing.password_hash) {
+    return res.status(409).json({ success: false, error: { code: 'EMAIL_EXISTS', message: 'Email sudah terdaftar' } });
+  }
+  const hash = await bcrypt.hash(password, 10);
+  let merchant = existing;
+  if (!existing) {
+    merchant = await getOrCreateMerchantByEmail(email);
+  }
+  const db = await import('../../lib/db');
+  await db.default.getDb().then(dbInst => dbInst.run('UPDATE merchants SET password_hash = ? WHERE owner_email = ?', hash, email));
+  return res.json({ success: true, data: { email } });
+});
+
+// === Login (email + password) ===
+router.post('/auth/login', async (req, res) => {
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  const password = String(req.body?.password || '');
+  if (!email || !password) {
+    return res.status(400).json({ success: false, error: { code: 'INVALID_INPUT', message: 'Email/password wajib' } });
+  }
+  const merchant = await getMerchantByEmail(email);
+  if (!merchant || !merchant.password_hash) {
+    return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Email tidak ditemukan' } });
+  }
+  const ok = await bcrypt.compare(password, merchant.password_hash);
+  if (!ok) {
+    return res.status(401).json({ success: false, error: { code: 'INVALID_PASSWORD', message: 'Password salah' } });
+  }
+  return res.json({ success: true, data: { email } });
+});
+
 // Ensure tables exist
 router.use(async (_req, _res, next) => {
   try {

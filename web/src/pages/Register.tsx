@@ -12,18 +12,31 @@ export const Register = ({ onNavigate }: RegisterProps) => {
     name: '',
     email: '',
     businessName: '',
+    password: '',
+    confirmPassword: '',
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
+    if (formData.password.length < 6) {
+      setError('Password minimal 6 karakter');
+      setLoading(false);
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError('Konfirmasi password tidak cocok');
+      setLoading(false);
+      return;
+    }
     try {
-      // MVP: no password yet; treated as mock Google login.
-      await register(formData.email);
+      await register(formData.email, formData.password);
       onNavigate('dashboard');
-    } catch (error) {
-      console.error('Registration failed:', error);
+    } catch (err: any) {
+      setError(err?.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -93,13 +106,43 @@ export const Register = ({ onNavigate }: RegisterProps) => {
               </div>
             </div>
 
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
-              <div className="font-medium">Catatan</div>
-              <div className="mt-1">
-                Untuk versi MVP, pendaftaran tidak memakai password. Email kamu dipakai sebagai
-                simulasi &quot;Login with Google&quot;.
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Password minimal 6 karakter"
+                  required
+                />
               </div>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Konfirmasi Password
+              </label>
+              <div className="relative">
+                <input
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Ulangi password"
+                  required
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 mb-2">
+                {error}
+              </div>
+            )}
 
             <button
               type="submit"

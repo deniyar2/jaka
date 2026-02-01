@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AdminLayout } from '../components/AdminLayout';
 import { adminGetOrderkuotaSettings, adminQrisTest, adminUpdateOrderkuotaSettings } from '../lib/api';
 import { Save, TestTube2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function AdminOrderKuota({ onNavigate }: { onNavigate: (page: any) => void }) {
   const [form, setForm] = useState<any>({
@@ -22,6 +23,7 @@ export default function AdminOrderKuota({ onNavigate }: { onNavigate: (page: any
     setMsg(null);
     const r = await adminGetOrderkuotaSettings();
     if (r?.success) setForm((r as any).data || form);
+    else toast.error('Gagal memuat data OrderKuota');
   }
 
   useEffect(() => { load(); }, []);
@@ -31,8 +33,13 @@ export default function AdminOrderKuota({ onNavigate }: { onNavigate: (page: any
     setMsg(null);
     const r = await adminUpdateOrderkuotaSettings(form);
     setSaving(false);
-    if (r?.success) setMsg('Tersimpan.');
-    else setMsg((r as any)?.error?.message || 'Gagal menyimpan.');
+    if (r?.success) {
+      setMsg('Tersimpan.');
+      toast.success('Kredensial OrderKuota tersimpan');
+    } else {
+      setMsg((r as any)?.error?.message || 'Gagal menyimpan.');
+      toast.error('Gagal menyimpan kredensial');
+    }
   }
 
   async function runTest() {
@@ -41,6 +48,11 @@ export default function AdminOrderKuota({ onNavigate }: { onNavigate: (page: any
     const r = await adminQrisTest({ qris_static: form.qris_static, amount: Number(testAmount) || 0 });
     setTesting(false);
     setTestRes(r);
+    if (r?.success) {
+      toast.success('Tes QRIS berhasil');
+    } else {
+      toast.error('Tes QRIS gagal');
+    }
   }
 
   return (

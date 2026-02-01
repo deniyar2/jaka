@@ -13,13 +13,13 @@ import AdminOverview from './pages/AdminOverview';
 import AdminVerifications from './pages/AdminVerifications';
 import AdminOrderKuota from './pages/AdminOrderKuota';
 import AdminExports from './pages/AdminExports';
+import { Toaster } from 'react-hot-toast';
 
 type Page = 'landing' | 'login' | 'register' | 'dashboard' | 'transactions' | 'channels' | 'docs' | 'settings' | 'admin_overview' | 'admin_verifications' | 'admin_orderkuota' | 'admin_exports';
 
 function AppContent() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const authenticated = !!user;
-  const isAdmin = !!user?.is_admin;
   const [currentPage, setCurrentPage] = useState<Page>(authenticated ? 'dashboard' : 'landing');
 
   const handleNavigate = (page: string) => {
@@ -29,6 +29,7 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar onNavigate={handleNavigate} currentPage={currentPage} />
+      <Toaster position="top-right" />
       {currentPage === 'landing' && <Landing onNavigate={handleNavigate} />}
       {currentPage === 'login' && <Login onNavigate={handleNavigate} />}
       {currentPage === 'register' && <Register onNavigate={handleNavigate} />}

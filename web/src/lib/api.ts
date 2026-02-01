@@ -30,10 +30,18 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<ApiRespons
   return json as ApiResponse<T>;
 }
 
-export async function mockGoogleLogin(email: string) {
-  return apiFetch<{ ok: true }>('/api/app/auth/mock-google', {
+
+export async function registerWithEmail(email: string, password: string) {
+  return apiFetch<{ email: string }>('/api/app/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export async function loginWithEmail(email: string, password: string) {
+  return apiFetch<{ email: string }>('/api/app/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
   });
 }
 

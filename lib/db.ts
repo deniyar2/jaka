@@ -113,6 +113,7 @@ export async function initDb(): Promise<void> {
     CREATE TABLE IF NOT EXISTS merchants (
       id TEXT PRIMARY KEY,
       owner_email TEXT NOT NULL UNIQUE,
+      password_hash TEXT,
       status TEXT NOT NULL,
       wa_number TEXT,
       wa_enabled INTEGER NOT NULL DEFAULT 1,
@@ -120,6 +121,13 @@ export async function initDb(): Promise<void> {
       updated_at INTEGER NOT NULL
     );
   `);
+
+  // Migration: add password_hash if missing
+  try {
+    await db.exec('ALTER TABLE merchants ADD COLUMN password_hash TEXT;');
+  } catch {
+    // ignore if already exists
+  }
 
   // Merchant credentials (API key + webhook secret)
   await db.exec(`
@@ -423,6 +431,7 @@ export async function getSettingNumber(key: string, fallback: number): Promise<n
 export type Merchant = {
   id: string;
   owner_email: string;
+  password_hash?: string | null;
   status: 'unverified' | 'submitted' | 'active' | 'rejected' | 'suspended';
   wa_number?: string | null;
   wa_enabled?: number;
@@ -477,6 +486,7 @@ export async function getMerchantByEmail(email: string): Promise<Merchant | null
   return {
     id: String(row.id),
     owner_email: String(row.owner_email),
+    password_hash: row.password_hash ? String(row.password_hash) : null,
     status: String(row.status) as Merchant['status'],
     wa_number: row.wa_number ? String(row.wa_number) : null,
     wa_enabled: typeof row.wa_enabled === 'number' ? row.wa_enabled : Number(row.wa_enabled ?? 1),

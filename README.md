@@ -121,3 +121,14 @@ API_SECRET=ss_live_... \
 node examples/node_fetch_create_invoice.mjs
 ```
 
+---
+
+## Onboarding Merchant
+
+1. Register akun merchant di halaman Register (frontend).
+2. Isi data: nama, email, nama bisnis, password.
+3. Setelah register, merchant status = pending.
+4. Setelah di-approve oleh operator/admin, merchant bisa login dan akses dashboard, API key, webhook, dsb.
+
+> Catatan: Fitur admin/monitoring hanya untuk operator, tidak tersedia untuk user/merchant.
+

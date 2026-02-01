@@ -9,6 +9,7 @@ import {
   VerificationQueueItem,
 } from '../lib/api';
 import { Check, X, MessageSquareWarning, ExternalLink, Image as ImageIcon, RefreshCw } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function AdminVerifications({ onNavigate }: { onNavigate: (page: any) => void }) {
   const [items, setItems] = useState<VerificationQueueItem[]>([]);
@@ -22,6 +23,7 @@ export default function AdminVerifications({ onNavigate }: { onNavigate: (page: 
     const r = await adminListVerificationQueue();
     setLoading(false);
     if (r?.success) setItems((r as any).data || []);
+    else toast.error('Gagal memuat queue verifikasi');
   }
 
   useEffect(() => { load(); }, []);
@@ -33,6 +35,9 @@ export default function AdminVerifications({ onNavigate }: { onNavigate: (page: 
     if (r?.success) {
       setItems(prev => prev.filter(x => x.id !== id));
       setSelected(null);
+      toast.success('Verifikasi merchant di-approve');
+    } else {
+      toast.error('Gagal approve verifikasi');
     }
   }
   async function reject(id: string) {
@@ -41,15 +46,20 @@ export default function AdminVerifications({ onNavigate }: { onNavigate: (page: 
       setItems(prev => prev.filter(x => x.id !== id));
       setSelected(null);
       setReason('');
+      toast.success('Verifikasi merchant di-reject');
+    } else {
+      toast.error('Gagal reject verifikasi');
     }
   }
   async function needMore(id: string) {
     const r = await adminNeedMoreInfoVerification(id, note || 'Mohon lengkapi informasi');
     if (r?.success) {
-      // keep item but mark status locally
       setItems(prev => prev.map(x => x.id === id ? ({ ...x, status: 'need_more_info' } as any) : x));
       setSelected(null);
       setNote('');
+      toast.success('Request info tambahan dikirim ke merchant');
+    } else {
+      toast.error('Gagal request info tambahan');
     }
   }
 

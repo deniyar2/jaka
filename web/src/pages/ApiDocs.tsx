@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Code, Copy, CheckCircle } from 'lucide-react';
+import { Copy, CheckCircle } from 'lucide-react';
 
 const codeExamples = {
   createTransaction: `curl -X POST https://api.paygateway.com/v1/transactions \\
@@ -80,6 +80,7 @@ export const ApiDocs = () => {
     { id: 'get-transaction', name: 'Get Transaction' },
     { id: 'webhooks', name: 'Webhooks' },
     { id: 'errors', name: 'Error Handling' },
+    { id: 'onboarding', name: 'Onboarding Merchant' },
   ];
 
   return (
@@ -288,6 +289,29 @@ export const ApiDocs = () => {
                         </tr>
                       </tbody>
                     </table>
+                  </div>
+                </div>
+              )}
+
+              {activeSection === 'onboarding' && (
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Onboarding Merchant</h2>
+                  <p className="text-gray-600 mb-4">
+                    Ikuti langkah berikut untuk mendaftar dan mengaktifkan akun merchant.
+                  </p>
+                  <ol className="list-decimal list-inside space-y-2 text-gray-600 mb-4">
+                    <li>Merchant melakukan pendaftaran di halaman Register.</li>
+                    <li>Isi data: nama, email, nama bisnis, password.</li>
+                    <li>Status merchant akan <b>pending</b> sampai di-approve operator/admin.</li>
+                    <li>Setelah di-approve, merchant bisa login, akses dashboard, API key, webhook, dsb.</li>
+                  </ol>
+                  <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-800">
+                      Untuk testing, gunakan sandbox API key dan endpoint. Untuk live, gunakan production key.
+                    </p>
+                  </div>
+                  <div className="mt-4 text-sm text-gray-500">
+                    <b>Catatan:</b> Fitur admin/monitoring hanya untuk operator, tidak tersedia untuk user/merchant.
                   </div>
                 </div>
               )}

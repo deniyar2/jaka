@@ -9,17 +9,19 @@ interface LoginProps {
 export const Login = ({ onNavigate }: LoginProps) => {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
-  // MVP: no real password/OAuth yet. Email is used as mock "Google login".
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     try {
-      await login(email);
+      await login(email, password);
       onNavigate('dashboard');
-    } catch (error) {
-      console.error('Login failed:', error);
+    } catch (err: any) {
+      setError(err?.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -55,9 +57,27 @@ export const Login = ({ onNavigate }: LoginProps) => {
               </div>
             </div>
 
-            <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-800">
-              Login ini masih mode <b>mock</b>. Cukup isi email (seolah-olah Google OAuth).
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Your password"
+                  required
+                />
+              </div>
             </div>
+
+            {error && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 mb-2">
+                {error}
+              </div>
+            )}
 
             <button
               type="submit"
